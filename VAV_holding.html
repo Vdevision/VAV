@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAV — Vision Among Visioners</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #050505;
+  --deep: #0a0a0a;
+  --white: #f0ebe0;
+  --off: #b8b3a8;
+  --muted: #6b665c;
+  --gold: #c8a84b;
+  --gold-b: #f0c055;
+  --gold-d: #5a4a1a;
+  --gold-glow: rgba(200,168,75,0.15);
+  --green: #5ba87a;
+  --red: #a85b5b;
+  --card: #0d0d0d;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--black); color:var(--white); font-family:'Cormorant Garamond',Georgia,serif; overflow-x:hidden; }
+
+/* Grain overlay */
+body::after {
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;mix-blend-mode:overlay;
+}
+
+/* ═══════════ NAVIGATION ═══════════ */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  padding:20px 48px;display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(180deg,rgba(5,5,5,0.95),transparent);
+  backdrop-filter:blur(8px);transition:all 0.4s;
+}
+nav.scrolled { background:rgba(5,5,5,0.95); border-bottom:1px solid rgba(200,168,75,0.1); }
+.nav-logo { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:var(--gold); }
+.nav-links { display:flex; gap:32px; }
+.nav-links a {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px;
+  color:var(--muted); text-decoration:none; text-transform:uppercase;
+  transition:color 0.3s; position:relative;
+}
+.nav-links a:hover { color:var(--gold); }
+.nav-links a::after {
+  content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px;
+  background:var(--gold); transition:width 0.3s;
+}
+.nav-links a:hover::after { width:100%; }
+
+/* ═══════════ HERO ═══════════ */
+.hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  justify-content:center; align-items:center; text-align:center;
+  padding:120px 40px 80px; position:relative; overflow:hidden;
+}
+.hero-particles {
+  position:absolute; inset:0; overflow:hidden;
+}
+.particle {
+  position:absolute; width:2px; height:2px; background:var(--gold);
+  border-radius:50%; opacity:0; animation:float-up linear infinite;
+}
+@keyframes float-up {
+  0% { opacity:0; transform:translateY(100vh) scale(0); }
+  10% { opacity:0.6; }
+  90% { opacity:0.6; }
+  100% { opacity:0; transform:translateY(-10vh) scale(1.5); }
+}
+.hero-bg {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(200px,32vw,420px);
+  color:rgba(200,168,75,0.03); letter-spacing:-15px;
+  pointer-events:none; white-space:nowrap; line-height:1;
+}
+.hero-badge {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:6px;
+  color:var(--gold); text-transform:uppercase; margin-bottom:36px;
+  display:flex; align-items:center; gap:16px;
+  opacity:0; animation:fu 0.8s 0.3s ease forwards;
+}
+.hero-badge::before, .hero-badge::after {
+  content:''; width:40px; height:1px; background:var(--gold-d);
+}
+.hero h1 {
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(80px,16vw,200px);
+  line-height:0.82; letter-spacing:12px;
+  opacity:0; animation:fu 1s 0.5s ease forwards;
+}
+.hero h1 span {
+  display:block; font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-weight:300; font-size:0.22em; letter-spacing:8px; color:var(--off); margin-top:16px;
+}
+.hero-motto {
+  max-width:600px; font-size:clamp(17px,2vw,22px); line-height:1.65;
+  font-style:italic; font-weight:300; color:var(--off);
+  margin-top:40px; opacity:0; animation:fu 0.9s 0.7s ease forwards;
+}
+.hero-cta {
+  display:flex; gap:16px; margin-top:48px; flex-wrap:wrap; justify-content:center;
+  opacity:0; animation:fu 0.9s 0.9s ease forwards;
+}
+.hero-scroll {
+  position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  opacity:0; animation:fu 1s 1.2s ease forwards;
+}
+.hero-scroll span {
+  font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:4px;
+  color:var(--gold-d); text-transform:uppercase;
+}
+.scroll-line {
+  width:1px; height:40px; background:linear-gradient(180deg,var(--gold-d),transparent);
+  animation:scroll-pulse 2s ease-in-out infinite;
+}
+@keyframes scroll-pulse {
+  0%,100% { opacity:0.3; height:40px; }
+  50% { opacity:1; height:55px; }
+}
+
+/* ═══════════ MARQUEE ═══════════ */
+.strip { background:var(--gold); padding:10px 0; overflow:hidden; }
+.strip-in { display:flex; animation:mq 50s linear infinite; white-space:nowrap; }
+.strip-in:hover { animation-play-state:paused; }
+@keyframes mq { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+.si {
+  padding:0 28px; font-family:'IBM Plex Mono',monospace; font-size:10px;
+  letter-spacing:2px; color:var(--black); font-weight:500;
+}
+
+/* ═══════════ SECTIONS ═══════════ */
+.s { max-width:1200px; margin:0 auto; padding:120px 48px; }
+.lbl {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:5px;
+  color:var(--gold); text-transform:uppercase; margin-bottom:20px;
+  display:flex; align-items:center; gap:12px;
+}
+.lbl::before { content:''; display:inline-block; width:24px; height:1px; background:var(--gold-d); }
+h2.xl {
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,7vw,96px);
+  line-height:0.88; letter-spacing:3px;
+}
+h3.lg {
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(32px,5vw,64px);
+  line-height:0.92; letter-spacing:2px;
+}
+em.g { color:var(--gold); font-style:normal; }
+.body {
+  font-size:clamp(15px,1.4vw,18px); line-height:1.85; color:var(--off);
+  font-weight:300; max-width:640px;
+}
+.body p { margin-bottom:14px; }
+.body strong { color:var(--white); font-weight:600; }
+hr.r { border:none; border-top:1px solid #141414; margin:0; }
+hr.gr { border:none; border-top:1px solid var(--gold-d); }
+
+/* ═══════════ BUTTONS ═══════════ */
+.btn {
+  padding:16px 40px; font-family:'IBM Plex Mono',monospace; font-size:11px;
+  letter-spacing:3px; text-transform:uppercase; cursor:pointer;
+  transition:all 0.3s; border:none; text-decoration:none; display:inline-block;
+}
+.bg { background:var(--gold); color:var(--black); }
+.bg:hover { background:var(--gold-b); transform:translateY(-2px); box-shadow:0 8px 32px rgba(200,168,75,0.2); }
+.bo { background:transparent; color:var(--gold); border:1px solid var(--gold-d); }
+.bo:hover { border-color:var(--gold); transform:translateY(-2px); }
+
+/* ═══════════ HOLDING STRUCTURE VISUAL ═══════════ */
+.org-chart { margin-top:60px; position:relative; }
+.org-top {
+  text-align:center; margin-bottom:48px; position:relative;
+}
+.org-node {
+  display:inline-block; padding:28px 48px; border:2px solid var(--gold);
+  background:rgba(200,168,75,0.05); position:relative;
+  transition:all 0.3s;
+}
+.org-node:hover { background:rgba(200,168,75,0.1); box-shadow:0 0 40px rgba(200,168,75,0.1); }
+.org-node-title {
+  font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:4px; color:var(--gold);
+}
+.org-node-sub {
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase; margin-top:4px;
+}
+.org-connector {
+  width:2px; height:48px; background:linear-gradient(180deg,var(--gold-d),var(--gold),var(--gold-d));
+  margin:0 auto;
+}
+.org-hline {
+  position:relative; height:2px; max-width:800px; margin:0 auto;
+  background:linear-gradient(90deg,transparent,var(--gold-d) 15%,var(--gold-d) 85%,transparent);
+}
+.org-children {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px;
+  max-width:900px; margin:48px auto 0;
+}
+.org-child {
+  padding:32px 24px; border:1px solid #1a1a1a; background:var(--card);
+  text-align:center; position:relative; overflow:hidden;
+  transition:all 0.3s; cursor:pointer;
+}
+.org-child:hover { border-color:var(--gold-d); background:rgba(200,168,75,0.03); transform:translateY(-4px); }
+.org-child::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+}
+.org-child:nth-child(1)::before { background:var(--gold); }
+.org-child:nth-child(2)::before { background:var(--green); }
+.org-child:nth-child(3)::before { background:var(--muted); }
+.org-child-n {
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:12px;
+}
+.org-child:nth-child(1) .org-child-n { color:var(--gold); }
+.org-child:nth-child(2) .org-child-n { color:var(--green); }
+.org-child:nth-child(3) .org-child-n { color:var(--muted); }
+.org-child-name {
+  font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; margin-bottom:6px;
+}
+.org-child-desc {
+  font-size:13px; line-height:1.6; color:#666; font-weight:300;
+}
+.org-child-meta {
+  margin-top:16px; padding-top:16px; border-top:1px solid #1a1a1a;
+  font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--muted);
+  letter-spacing:1px; line-height:2;
+}
+.org-child-pct {
+  font-family:'Bebas Neue',sans-serif; font-size:42px;
+  color:rgba(200,168,75,0.15); margin-top:8px; letter-spacing:2px;
+}
+
+/* ═══════════ OWNER BADGE ═══════════ */
+.owner-badge {
+  display:inline-flex; align-items:center; gap:16px;
+  padding:12px 32px; border:1px solid var(--gold-d);
+  background:rgba(200,168,75,0.03); margin-bottom:32px;
+}
+.owner-avatar {
+  width:48px; height:48px; border-radius:50%; border:2px solid var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--gold);
+  background:rgba(200,168,75,0.08);
+}
+.owner-info {
+  text-align:left;
+}
+.owner-name {
+  font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px;
+}
+.owner-title {
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:2px;
+  color:var(--gold); text-transform:uppercase;
+}
+
+/* ═══════════ PROJECTS CARDS ═══════════ */
+.holding-viz { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; margin-top:60px; }
+.hv-card {
+  padding:44px 32px; border:1px solid #151515; position:relative;
+  overflow:hidden; cursor:pointer; transition:all 0.3s;
+}
+.hv-card:hover { border-color:var(--gold-d); background:rgba(200,168,75,0.025); transform:translateY(-2px); }
+.hv-card::before {
+  content:attr(data-n); position:absolute; bottom:16px; right:20px;
+  font-family:'Bebas Neue',sans-serif; font-size:90px;
+  color:rgba(200,168,75,0.04); line-height:1; pointer-events:none;
+}
+.hv-status { font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+.s-build { color:var(--gold); }
+.s-live { color:var(--green); }
+.s-inc { color:#555; }
+.hv-name { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:2px; margin-bottom:8px; }
+.hv-desc { font-size:13.5px; line-height:1.7; color:#777; font-weight:300; }
+.hv-pct { font-family:'Bebas Neue',sans-serif; font-size:52px; color:rgba(200,168,75,0.18); margin-top:20px; letter-spacing:2px; }
+
+/* ═══════════ FOUNDER ═══════════ */
+.founder-block {
+  display:grid; grid-template-columns:1fr 2fr; gap:64px;
+  align-items:start; padding:100px 48px;
+}
+.founder-initial {
+  font-family:'Bebas Neue',sans-serif; font-size:140px;
+  background:linear-gradient(180deg,rgba(200,168,75,0.15),rgba(200,168,75,0.03));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1; margin-bottom:16px;
+}
+.founder-name { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:3px; margin-bottom:4px; }
+.founder-role {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px;
+  color:var(--gold); text-transform:uppercase; margin-bottom:24px;
+}
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:20px; }
+.tg {
+  padding:5px 12px; border:1px solid #222; font-family:'IBM Plex Mono',monospace;
+  font-size:9px; letter-spacing:1px; color:#555; transition:all 0.2s;
+}
+.tg:hover { border-color:var(--gold-d); color:var(--gold); }
+
+/* ═══════════ PRINCIPLES ═══════════ */
+.principles-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-top:48px;
+}
+.principle {
+  padding:40px 36px; border:1px solid #121212; cursor:pointer;
+  transition:all 0.3s; position:relative; overflow:hidden;
+}
+.principle:hover { border-color:var(--gold-d); background:rgba(200,168,75,0.02); }
+.principle::after {
+  content:attr(data-num); position:absolute; top:12px; right:16px;
+  font-family:'Bebas Neue',sans-serif; font-size:60px;
+  color:rgba(200,168,75,0.04); pointer-events:none;
+}
+.p-num {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--gold);
+  letter-spacing:3px; margin-bottom:12px;
+}
+.p-title {
+  font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1px;
+  margin-bottom:10px;
+}
+.p-body { font-size:13.5px; line-height:1.7; color:#777; font-weight:300; }
+
+/* ═══════════ MISSION / VISION / VALUES ═══════════ */
+.mvv-grid {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; margin-top:48px;
+}
+.mvv-card {
+  padding:48px 36px; border:1px solid #121212; position:relative;
+  transition:all 0.3s;
+}
+.mvv-card:hover { border-color:var(--gold-d); background:rgba(200,168,75,0.015); }
+.mvv-icon {
+  font-size:36px; margin-bottom:20px; display:block;
+}
+.mvv-label {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:4px;
+  color:var(--gold); text-transform:uppercase; margin-bottom:16px;
+}
+.mvv-title {
+  font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px;
+  margin-bottom:16px; line-height:1.1;
+}
+.mvv-body { font-size:14px; line-height:1.8; color:#777; font-weight:300; }
+
+/* ═══════════ QUOTE ═══════════ */
+.quote-section {
+  padding:100px 48px; text-align:center; position:relative;
+  background:linear-gradient(180deg,transparent,rgba(200,168,75,0.02),transparent);
+}
+.quote-mark {
+  font-family:'Playfair Display',serif; font-size:120px; color:rgba(200,168,75,0.1);
+  line-height:0.5; margin-bottom:20px; display:block;
+}
+.quote-text {
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300;
+  font-size:clamp(22px,3vw,36px); line-height:1.5; color:var(--gold-b);
+  max-width:700px; margin:0 auto 24px;
+}
+.quote-author {
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase;
+}
+
+/* ═══════════ FISCAL STRUCTURE ═══════════ */
+.fiscal-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:48px;
+}
+.fiscal-card {
+  padding:32px 24px; border:1px solid #121212; text-align:center;
+  transition:all 0.3s;
+}
+.fiscal-card:hover { border-color:var(--gold-d); background:rgba(200,168,75,0.015); }
+.fiscal-num {
+  font-family:'Bebas Neue',sans-serif; font-size:48px; color:var(--gold);
+  letter-spacing:2px; line-height:1;
+}
+.fiscal-label {
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:2px;
+  color:var(--muted); text-transform:uppercase; margin-top:8px;
+}
+
+/* ═══════════ TIMELINE ═══════════ */
+.timeline { margin-top:60px; position:relative; padding-left:40px; }
+.timeline::before {
+  content:''; position:absolute; left:12px; top:0; bottom:0; width:1px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-d),transparent);
+}
+.tl-item { position:relative; padding-bottom:48px; }
+.tl-item::before {
+  content:''; position:absolute; left:-33px; top:4px;
+  width:10px; height:10px; border:2px solid var(--gold);
+  background:var(--black); border-radius:50%;
+}
+.tl-year {
+  font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--gold);
+  letter-spacing:2px; line-height:1;
+}
+.tl-title {
+  font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px;
+  margin:6px 0;
+}
+.tl-desc { font-size:14px; line-height:1.7; color:#666; font-weight:300; }
+
+/* ═══════════ CLOSING ═══════════ */
+.closing {
+  text-align:center; padding:140px 48px; position:relative; overflow:hidden;
+}
+.clo-bg {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif; font-size:clamp(100px,22vw,300px);
+  color:rgba(200,168,75,0.025); white-space:nowrap; pointer-events:none; letter-spacing:15px;
+}
+
+/* ═══════════ FOOTER ═══════════ */
+footer {
+  border-top:1px solid var(--gold-d); padding:28px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.fb { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:6px; color:var(--gold); }
+.fm {
+  font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:2px;
+  color:var(--gold-d); text-transform:uppercase;
+}
+
+/* ═══════════ MODAL ═══════════ */
+.ov {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9);
+  z-index:10000; align-items:center; justify-content:center;
+  backdrop-filter:blur(10px);
+}
+.ov.open { display:flex; }
+.mo {
+  background:#0a0a0a; border:1px solid var(--gold-d); max-width:580px;
+  width:92%; padding:48px; position:relative;
+}
+.mo::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.mc {
+  position:absolute; top:18px; right:22px; font-family:'IBM Plex Mono',monospace;
+  font-size:12px; color:var(--gold-d); cursor:pointer; letter-spacing:2px;
+}
+.mc:hover { color:var(--white); }
+.mo h2 {
+  font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px;
+  margin-bottom:18px; color:var(--white); border-bottom:1px solid #1e1e1e; padding-bottom:14px;
+}
+.mo p { font-size:14.5px; line-height:1.85; color:var(--off); margin-bottom:10px; font-weight:300; }
+.mo strong { color:var(--gold); font-weight:600; }
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fu { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
+.rv { opacity:0; transform:translateY(30px); transition:opacity 0.9s ease,transform 0.9s ease; }
+.rv.vi { opacity:1; transform:translateY(0); }
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:1024px) {
+  .holding-viz, .org-children, .mvv-grid { grid-template-columns:1fr; }
+  .principles-grid { grid-template-columns:1fr; }
+  .fiscal-grid { grid-template-columns:1fr 1fr; }
+  .founder-block { grid-template-columns:1fr; gap:32px; padding:64px 24px; }
+  .s { padding:80px 24px; }
+  .closing { padding:100px 24px; }
+  footer { flex-direction:column; gap:12px; text-align:center; padding:20px 24px; }
+  nav { padding:16px 24px; }
+  .nav-links { gap:16px; }
+  .nav-links a { font-size:8px; letter-spacing:2px; }
+}
+@media(max-width:600px) {
+  .fiscal-grid { grid-template-columns:1fr; }
+  .hero-cta { flex-direction:column; align-items:center; }
+  .nav-links { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <div class="nav-logo">VAV</div>
+  <div class="nav-links">
+    <a href="#estructura">Estructura</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#fundador">Fundador</a>
+    <a href="#principios">Principios</a>
+    <a href="#mision">Misión</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<!-- MODAL -->
+<div class="ov" id="modal" onclick="if(event.target===this)cm()">
+  <div class="mo"><span class="mc" onclick="cm()">[ ESC ]</span><h2 id="mt">—</h2><div id="mb"></div></div>
+</div>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero" id="top">
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-bg">VAV</div>
+  <div class="hero-badge">Est. 2026 · Lleida</div>
+  <h1>VAV<span>Vision Among Visioners</span></h1>
+  <p class="hero-motto">Un holding personal construido para durar generaciones. Proyectos que se multiplican. Una dirección. Cien por cien de Marc Vidalmorgó.</p>
+  <div class="hero-cta">
+    <a href="#estructura" class="btn bg">Explorar estructura</a>
+    <a href="#portfolio" class="btn bo">Ver portfolio</a>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ═══════════ MARQUEE ═══════════ -->
+<div class="strip">
+  <div class="strip-in">
+    <span class="si">VAV — VISION AMONG VISIONERS</span><span class="si">◆</span>
+    <span class="si">HOLDING 100% MARC VIDALMORGÓ</span><span class="si">◆</span>
+    <span class="si">VIFER SL · TRADING LAB · NEWSLETTER</span><span class="si">◆</span>
+    <span class="si">LLEIDA · CATALUÑA · ESPAÑA · 2026</span><span class="si">◆</span>
+    <span class="si">SISTEMAS ANTES QUE HEROÍSMOS</span><span class="si">◆</span>
+    <span class="si">MARGEN ANTES QUE ESCALA</span><span class="si">◆</span>
+    <span class="si">VAV — VISION AMONG VISIONERS</span><span class="si">◆</span>
+    <span class="si">HOLDING 100% MARC VIDALMORGÓ</span><span class="si">◆</span>
+    <span class="si">VIFER SL · TRADING LAB · NEWSLETTER</span><span class="si">◆</span>
+    <span class="si">LLEIDA · CATALUÑA · ESPAÑA · 2026</span><span class="si">◆</span>
+    <span class="si">SISTEMAS ANTES QUE HEROÍSMOS</span><span class="si">◆</span>
+    <span class="si">MARGEN ANTES QUE ESCALA</span><span class="si">◆</span>
+  </div>
+</div>
+
+<!-- ═══════════ QUÉ ES VAV ═══════════ -->
+<section class="s" id="estructura">
+  <div class="lbl rv">El holding</div>
+  <h2 class="xl rv">NO ES UNA<br>EMPRESA.<br><em class="g">ES UNA<br>ARQUITECTURA.</em></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:48px;align-items:start;">
+    <div class="body rv">
+      <p><strong>VAV — Vision Among Visioners</strong> es el vehículo patrimonial y estratégico de Marc Vidalmorgó. Un holding personal de capital 100% propio que agrupa proyectos distintos bajo una lógica común: margen alto, sistema propio, ejecución sin ruido.</p>
+      <p>No hay inversores externos. No hay dependencia de terceros. Cada proyecto dentro de VAV tiene autonomía operativa, equipo específico y modelo de negocio independiente. El holding les da coherencia estratégica, dirección financiera unificada y estructura fiscal inteligente.</p>
+      <p><strong>Lleida, 2026. El momento es ahora.</strong></p>
+    </div>
+    <div class="rv">
+      <div style="border-left:3px solid var(--gold);padding-left:28px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;line-height:1.5;color:var(--gold-b);font-weight:300;">
+        "Cada proyecto que entra en VAV tiene que poder sobrevivir solo. Si no puede, no entra."
+      </div>
+      <div style="margin-top:32px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold-d);letter-spacing:2px;line-height:2.2;">
+        ESTRUCTURA: Holding personal unipersonal<br>
+        PROPIETARIO: Marc Vidalmorgó — 100%<br>
+        FORMA JURÍDICA: Sociedad Limitada (SL)<br>
+        SEDE: Lleida, Cataluña, España<br>
+        ACTIVIDAD: Tenencia de participaciones<br>
+        INICIO: 2026
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ESTRUCTURA VISUAL ═══════════ -->
+<hr class="r">
+<section class="s" style="padding-top:80px;">
+  <div class="lbl rv">Organigrama</div>
+  <h2 class="xl rv" style="margin-bottom:0;">LA ESTRUCTURA<br><em class="g">DEL IMPERIO.</em></h2>
+
+  <div class="org-chart rv">
+    <!-- Owner -->
+    <div class="org-top">
+      <div class="owner-badge">
+        <div class="owner-avatar">MV</div>
+        <div class="owner-info">
+          <div class="owner-name">MARC VIDALMORGÓ</div>
+          <div class="owner-title">Socio único · Persona física</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connector -->
+    <div style="text-align:center;">
+      <div class="org-connector"></div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:2px;margin:8px 0;">100% PARTICIPACIONES</div>
+      <div class="org-connector"></div>
+    </div>
+
+    <!-- Holding -->
+    <div class="org-top">
+      <div class="org-node">
+        <div class="org-node-title">VAV HOLDING SL</div>
+        <div class="org-node-sub">Sociedad tenedora de participaciones · Lleida</div>
+      </div>
+    </div>
+
+    <!-- H-Line -->
+    <div class="org-hline" style="margin-top:48px;"></div>
+
+    <!-- Children -->
+    <div class="org-children">
+      <div class="org-child" onclick="om('vifer')">
+        <div class="org-child-n">● En construcción</div>
+        <div class="org-child-name">VIFER SL</div>
+        <div class="org-child-desc">Automatización IA para pymes españolas</div>
+        <div class="org-child-meta">
+          PARTICIPACIÓN VAV: 50%<br>
+          CO-FUNDADOR: Joel Fernández<br>
+          MARC: CEO Técnico
+        </div>
+        <div class="org-child-pct">50%</div>
+      </div>
+      <div class="org-child" onclick="om('trading')">
+        <div class="org-child-n" style="color:var(--green);">● Operando</div>
+        <div class="org-child-name">TRADING LAB</div>
+        <div class="org-child-desc">Capital cripto con metodología de fondo</div>
+        <div class="org-child-meta">
+          PARTICIPACIÓN VAV: 50%<br>
+          CO-FUNDADOR: Sergi Alió<br>
+          TESIS: Convergence Plays
+        </div>
+        <div class="org-child-pct">50%</div>
+      </div>
+      <div class="org-child" onclick="om('news')">
+        <div class="org-child-n" style="color:#555;">◌ Próximamente</div>
+        <div class="org-child-name">NEWSLETTER</div>
+        <div class="org-child-desc">Análisis financiero abierto al mundo</div>
+        <div class="org-child-meta">
+          PARTICIPACIÓN VAV: 50%<br>
+          CO-FUNDADOR: Sergi Alió<br>
+          LANZAMIENTO: 2026
+        </div>
+        <div class="org-child-pct">50%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ KPIs ═══════════ -->
+<hr class="r">
+<section class="s" style="padding-top:80px;padding-bottom:80px;">
+  <div class="lbl rv">Métricas del holding</div>
+  <div class="fiscal-grid rv">
+    <div class="fiscal-card">
+      <div class="fiscal-num">100%</div>
+      <div class="fiscal-label">Propiedad del holding</div>
+    </div>
+    <div class="fiscal-card">
+      <div class="fiscal-num">3</div>
+      <div class="fiscal-label">Proyectos activos</div>
+    </div>
+
+    <div class="fiscal-card">
+      <div class="fiscal-num">0</div>
+      <div class="fiscal-label">Inversores externos</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ QUOTE ═══════════ -->
+<div class="quote-section rv">
+  <span class="quote-mark">"</span>
+  <div class="quote-text">Los sistemas y los procesos que sigues son más importantes que las metas y los resultados que quieres obtener.</div>
+  <div class="quote-author">Principio VAV</div>
+</div>
+
+<!-- ═══════════ PORTFOLIO ═══════════ -->
+<hr class="r">
+<section class="s" id="portfolio" style="padding-bottom:0;">
+  <div class="lbl rv">El portfolio</div>
+  <h2 class="xl rv">VISIÓN ENTRE<br><em class="g">VISIONARIOS.</em></h2>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:20px;font-style:italic;">"El que tiene un porqué para vivir puede soportar casi cualquier cómo." — Friedrich Nietzsche</p>
+</section>
+<div style="max-width:1200px;margin:0 auto;padding:40px 48px 100px;">
+  <div class="holding-viz rv">
+    <div class="hv-card" data-n="01" onclick="om('vifer')">
+      <div class="hv-status s-build">● En construcción</div>
+      <div class="hv-name">VIFER SL</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:2px;margin-bottom:14px;">Automatización IA · Pymes · SaaS</div>
+      <div class="hv-desc">Automatización inteligente para las pymes españolas que no pueden permitirse quedarse atrás. Modelo SaaS de suscripción mensual con márgenes excepcionales.</div>
+      <div class="hv-pct" style="font-size:32px;">VAV · 50%</div>
+    </div>
+    <div class="hv-card" data-n="02" onclick="om('trading')">
+      <div class="hv-status s-live">● Operando</div>
+      <div class="hv-name">TRADING LAB</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:2px;margin-bottom:14px;">Capital · Cripto · DePIN · RWA</div>
+      <div class="hv-desc">Laboratorio de inversión cripto con disciplina de fondo institucional. Cada posición documentada. Cada tesis validada. Horizonte 2030.</div>
+      <div class="hv-pct">×100</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:1px;margin-top:4px;">Target altcoins</div>
+    </div>
+    <div class="hv-card" data-n="03" onclick="om('news')">
+      <div class="hv-status s-inc">◌ Próximamente</div>
+      <div class="hv-name">NEWSLETTER</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:2px;margin-bottom:14px;">Análisis Financiero · Media · Brand</div>
+      <div class="hv-desc">La inteligencia del Trading Lab, abierta al mundo. Plataforma web interactiva + newsletter con análisis real de mercados.</div>
+      <div class="hv-pct">2026</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-d);letter-spacing:1px;margin-top:4px;">Lanzamiento</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FUNDADOR ═══════════ -->
+<hr class="r" id="fundador">
+<div class="founder-block">
+  <div class="rv">
+    <div class="founder-initial">MV</div>
+    <div class="founder-name">Marc Vidalmorgó</div>
+    <div class="founder-role">Fundador · Socio único · Arquitecto del sistema</div>
+    <div class="tags">
+      <span class="tg">Comercio Internacional</span>
+      <span class="tg">Dir. Financiera</span>
+      <span class="tg">Automatización IA</span>
+      <span class="tg">Crypto Strategy</span>
+      <span class="tg">Content & Brand</span>
+      <span class="tg">24 años</span>
+      <span class="tg">Lleida</span>
+    </div>
+  </div>
+  <div class="rv">
+    <div class="lbl">El hombre detrás de VAV</div>
+    <h3 class="lg" style="margin-bottom:24px;">FORMACIÓN FINANCIERA.<br><em class="g">EJECUCIÓN TÉCNICA.<br>VISIÓN GLOBAL.</em></h3>
+    <div class="body">
+      <p>Marc Vidalmorgó construye desde Lleida con una base que pocos emprendedores tech de su generación tienen: formación en Comercio Internacional y un Máster en Dirección Financiera. Entiende los flujos de capital, los mercados globales y la estructura financiera antes de pensar en el producto.</p>
+      <p>VAV es la manifestación de esa visión: un holding donde cada proyecto tiene autonomía pero comparte la misma filosofía operativa — sistemas sobre heroísmos, márgenes sobre volumen, propiedad sobre dilución. Sin inversores que presionen. Sin estructuras que ralenticen.</p>
+      <p><strong>CEO Técnico de Vifer SL. Co-fundador del Trading Lab. Arquitecto del sistema. Socio único de VAV.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRINCIPIOS ═══════════ -->
+<hr class="r" id="principios">
+<section class="s">
+  <div class="lbl rv">Código operativo</div>
+  <h2 class="xl rv" style="margin-bottom:0;">LOS PRINCIPIOS<br>QUE MUEVEN<br><em class="g">TODO ESTO.</em></h2>
+
+  <div class="principles-grid">
+    <div class="principle rv" data-num="01" onclick="om('pr1')">
+      <div class="p-num">PRINCIPIO 01</div>
+      <div class="p-title">SISTEMAS ANTES QUE METAS</div>
+      <div class="p-body">Los procesos y sistemas que sigues son más importantes que los resultados que persigues. El sistema correcto genera resultados inevitables.</div>
+    </div>
+    <div class="principle rv" data-num="02" onclick="om('pr2')">
+      <div class="p-num">PRINCIPIO 02</div>
+      <div class="p-title">1% DIARIO · EFECTO COMPUESTO</div>
+      <div class="p-body">Las pequeñas victorias diarias suman. Su efecto compuesto es enorme. Céntrate en el progreso constante, no en la gran visión abstracta.</div>
+    </div>
+    <div class="principle rv" data-num="03" onclick="om('pr3')">
+      <div class="p-num">PRINCIPIO 03</div>
+      <div class="p-title">LA LIBERTAD ES EL PILAR</div>
+      <div class="p-body">La libertad es el derecho más vital y el valor supremo. Cada decisión en VAV se mide por cuánta libertad genera o cuánta destruye.</div>
+    </div>
+    <div class="principle rv" data-num="04" onclick="om('pr4')">
+      <div class="p-num">PRINCIPIO 04</div>
+      <div class="p-title">NUNCA PIERDAS CAPITAL</div>
+      <div class="p-body">Perder dinero te obliga a recuperarlo al doble de esfuerzo por puro porcentaje. Piensa cada decisión con tu capital como si fuera irreversible.</div>
+    </div>
+    <div class="principle rv" data-num="05" onclick="om('pr5')">
+      <div class="p-num">PRINCIPIO 05</div>
+      <div class="p-title">ACTIVOS PAGAN PASIVOS</div>
+      <div class="p-body">Todo pasivo debe estar cubierto por flujo de activos. Si no genera para cubrir su coste, no entra. Los activos financian la estructura, no la deuda.</div>
+    </div>
+    <div class="principle rv" data-num="06" onclick="om('pr6')">
+      <div class="p-num">PRINCIPIO 06</div>
+      <div class="p-title">CONTROL DEL MUNDO INTERNO</div>
+      <div class="p-body">El control absoluto externo es una ilusión. El verdadero control es dominar cómo afectan las variables externas a tu mundo interno.</div>
+    </div>
+    <div class="principle rv" data-num="07" onclick="om('pr7')">
+      <div class="p-num">PRINCIPIO 07</div>
+      <div class="p-title">DATOS, NO EMOCIONES</div>
+      <div class="p-body">La mente busca comodidad y te limita. Basa decisiones en datos objetivos y hechos. Cuando crees que no puedes, probablemente puedas.</div>
+    </div>
+    <div class="principle rv" data-num="08" onclick="om('pr8')">
+      <div class="p-num">PRINCIPIO 08</div>
+      <div class="p-title">PIENSA SIEMPRE EN 3</div>
+      <div class="p-body">Divide todas tus opciones en tres. Tres enfoques, tres posibilidades, tres caminos. La regla del tres rompe el pensamiento binario.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ QUOTE 2 ═══════════ -->
+<div class="quote-section rv">
+  <span class="quote-mark">"</span>
+  <div class="quote-text">Facis el que facis, fes-ho el millor que sapiguis.</div>
+  <div class="quote-author">Ensenyances de mon pare</div>
+</div>
+
+<!-- ═══════════ MISIÓN / VISIÓN / VALORES ═══════════ -->
+<hr class="r" id="mision">
+<section class="s">
+  <div class="lbl rv">ADN corporativo</div>
+  <h2 class="xl rv" style="margin-bottom:0;">MISIÓN. VISIÓN.<br><em class="g">VALORES.</em></h2>
+
+  <div class="mvv-grid rv">
+    <div class="mvv-card">
+      <span class="mvv-icon">◎</span>
+      <div class="mvv-label">Misión</div>
+      <div class="mvv-title">CONSTRUIR SISTEMAS<br>QUE GENEREN LIBERTAD</div>
+      <div class="mvv-body">Crear y operar un ecosistema de proyectos de alto margen que generen independencia financiera progresiva, permitiendo a su fundador dedicar tiempo a lo que realmente importa: crear valor, aprender y vivir con propósito.</div>
+    </div>
+    <div class="mvv-card">
+      <span class="mvv-icon">◈</span>
+      <div class="mvv-label">Visión</div>
+      <div class="mvv-title">UN HOLDING GENERACIONAL<br>DESDE LLEIDA</div>
+      <div class="mvv-body">Ser la infraestructura patrimonial que sostenga múltiples negocios rentables, inversiones estratégicas y una marca personal influyente. Un vehículo diseñado para crecer durante décadas, no para una exit rápida.</div>
+    </div>
+    <div class="mvv-card">
+      <span class="mvv-icon">◇</span>
+      <div class="mvv-label">Valores</div>
+      <div class="mvv-title">LIBERTAD · SISTEMAS<br>· DISCIPLINA</div>
+      <div class="mvv-body">Libertad como derecho supremo. Sistemas sobre heroísmos. Disciplina sobre motivación. Márgenes sobre volumen. Calidad sobre cantidad. Propiedad sobre dilución. Datos sobre intuición.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ROADMAP ═══════════ -->
+<hr class="r" id="roadmap">
+<section class="s">
+  <div class="lbl rv">Hoja de ruta</div>
+  <h2 class="xl rv" style="margin-bottom:0;">EL CAMINO<br><em class="g">TRAZADO.</em></h2>
+
+  <div class="timeline rv">
+    <div class="tl-item">
+      <div class="tl-year">2026</div>
+      <div class="tl-title">FUNDACIÓN Y PRIMER INGRESO</div>
+      <div class="tl-desc">Constitución de VAV Holding SL. Vifer SL genera primeros clientes recurrentes. Trading Lab consolida tesis Convergence Plays. Lanzamiento newsletter financiera.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2027</div>
+      <div class="tl-title">ESCALA Y CONSOLIDACIÓN</div>
+      <div class="tl-desc">Vifer SL alcanza 30+ clientes recurrentes. Newsletter monetizada con suscripción premium. Trading Lab en fase de acumulación pre-bull. Primeras inversiones del holding en fondos indexados.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2028–29</div>
+      <div class="tl-title">DIVERSIFICACIÓN</div>
+      <div class="tl-desc">Nuevos proyectos bajo el paraguas VAV: e-commerce de alto margen, posibles adquisiciones. Trading Lab ejecuta exits del ciclo crypto. Marca personal en fase de autoridad.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2030+</div>
+      <div class="tl-title">INDEPENDENCIA TOTAL</div>
+      <div class="tl-desc">VAV genera suficiente flujo de caja para cubrir todas las necesidades del fundador. El holding opera como vehículo patrimonial generacional. La libertad financiera es un hecho, no un objetivo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CLOSING ═══════════ -->
+<hr class="r">
+<div class="closing">
+  <div class="clo-bg">VISION</div>
+  <div class="lbl rv" style="justify-content:center;">VAV · 2026–∞</div>
+  <h2 class="xl rv" style="margin-bottom:28px;">ESTO ES SOLO<br><em class="g">EL PRINCIPIO.</em></h2>
+  <p style="max-width:580px;margin:0 auto 48px;font-size:19px;line-height:1.7;color:var(--off);font-style:italic;font-weight:300;" class="rv">
+    VAV no es un destino. Es la infraestructura para construir todos los que vendrán. Cada día un 1% mejor. Cada proyecto un paso más cerca de la libertad total.
+  </p>
+  <div class="rv" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn bg" onclick="om('contact')">Contactar con Marc</button>
+    <button class="btn bo" onclick="om('proyectos')">Ver los proyectos</button>
+  </div>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <div class="fb">VAV</div>
+  <div class="fm">Vision Among Visioners · Marc Vidalmorgó · Lleida 2026</div>
+  <div class="fm">Holding Personal · 100% Propiedad</div>
+</footer>
+
+<script>
+// ═══ MODAL DATA ═══
+const d = {
+  vifer:{t:'Vifer SL — Automatización IA',b:'<p>Automatización inteligente para pymes españolas. Co-fundada con <strong>Joel Fernández</strong> (CEO Negocio). Modelo SaaS de suscripción mensual: Starter 150€, Growth 200€, Pro 350€/mes + extras opcionales.</p><p>Marc actúa como <strong>CEO Técnico</strong>: stack tecnológico, automatizaciones con n8n, infraestructura AI y producto.</p><p>Web: vifer.tech · Paleta: Navy oscuro + Cyan</p>'},
+  trading:{t:'Trading Lab — Hedge Fund Alió & V',b:'<p>Laboratorio de inversión cripto operado al 50/50 con <strong>Sergi Alió</strong> (ADE). Tesis central: <strong>Convergence Plays</strong> — intersección de DePIN, RWA y AI descentralizada.</p><p>Assets en investigación: STORJ, Propy, Ritual, MOR, Sentient, PEAQ. Arquitectura de Solana sniper bot. Estrategia DCA activa.</p><p>Cada posición documentada. Cada tesis validada. Revisión semanal sistemática. Horizonte 2030.</p>'},
+  news:{t:'Newsletter Financiera',b:'<p>Próximamente: plataforma web interactiva + newsletter donde Marc y Sergi publican el análisis real del Trading Lab. Sin fluff. Solo metodología y decisiones reales.</p><p>Background combinado de Comercio Internacional + ADE. El nivel de análisis que pocas newsletters independientes pueden igualar.</p><p>Modelo: contenido gratuito + suscripción premium.</p>'},
+  pr1:{t:'Sistemas antes que metas',b:'<p>Los sistemas y los procesos que sigues son más importantes que las metas y los resultados que quieres obtener. Un buen sistema genera resultados inevitables.</p><p>En VAV esto se traduce en: <strong>automatización</strong>, procesos documentados, herramientas conectadas (Claude + Notion + n8n), y decisiones basadas en frameworks, no en impulsos.</p>'},
+  pr2:{t:'1% diario · Efecto compuesto',b:'<p>Una de las claves importantes para mejorar es progresar un 1% diario en cualquier cosa. Sumando distintas áreas y un progreso constante llegas lejos y alcanzas tu potencial.</p><p>Las pequeñas acciones y victorias suman. Su efecto compuesto es enorme. Céntrate más en conseguir <strong>victorias diarias</strong> hacia tus objetivos que en la gran visión abstracta.</p>'},
+  pr3:{t:'La libertad es el pilar',b:'<p>La LIBERTAD es el derecho más importante y vital y es el pilar en la escala de valores de VAV.</p><p>Tu tiempo es valioso y cada hora que trabajas se traduce en ingresos financieros. Cuando gastas dinero, en realidad estás gastando el tiempo que has trabajado para obtenerlo.</p><p>Los rendimientos de las inversiones actúan como una forma de "comprar" tiempo. La eficiencia conduce a mayor libertad y calidad de vida.</p>'},
+  pr4:{t:'Nunca pierdas capital',b:'<p>Nunca pierdas dinero así como así — se te va a hacer el doble de difícil recuperarlo por puro porcentaje. Piensa bien qué haces con tu capital, cada decisión es importante.</p><p><strong>Reglas derivadas:</strong></p><p>• Ahorra mínimo un 10% de lo que ganes<br>• Si no puedes comprar algo dos veces al momento, no puedes permitírtelo<br>• Mantener 4-6 meses de gastos como fondo colchón<br>• El coste de vivienda no puede superar el 30-40% del ingreso neto</p>'},
+  pr5:{t:'Activos pagan pasivos',b:'<p>Los activos siempre deben pagar los pasivos. Si voy a financiarme para comprar algo que genere un coste mensual fijo (pasivo), necesito que el flujo de caja se mantenga cubierto por activos que generen rendimiento económico capaz de cubrir el nuevo pasivo.</p><p>Esta es la lógica que VAV aplica a cada decisión de inversión y estructura de costes.</p>'},
+  pr6:{t:'Control del mundo interno',b:'<p>El control absoluto de todo nos da falsa seguridad ya que las variables escapan a nuestra predicción. El verdadero control es controlar cómo afectan a tu mundo interno cualquier cosa externa.</p><p>La mente está hecha para sobrevivir y te va a engañar constantemente. Aprende a limitar tu mente y usar el raciocinio más allá de lo que te diga. La visión que tengas de ti moldea la realidad.</p>'},
+  pr7:{t:'Datos, no emociones',b:'<p>Basa tus decisiones en datos y hechos objetivos en lugar de intuiciones o emociones pasajeras. La sensibilidad y los sentidos son reacciones — no verdades absolutas.</p><p>La mente busca la comodidad y te limita a tomar riesgos. Cuando crees que no puedes, probablemente puedas. Ante el miedo o la adrenalina, tira adelante y supéralo.</p>'},
+  pr8:{t:'Piensa siempre en 3',b:'<p>Siempre divide tus opciones en 3. En todo lo que hagas, si buscas respuestas piensa todo x3: 3 formas, siempre 3 enfoques, 3 posibilidades.</p><p>La regla del tres rompe el pensamiento binario (sí/no, bueno/malo) y fuerza la creatividad. Es el framework de decisión más simple y potente que existe.</p>'},
+  contact:{t:'Contactar con Marc',b:'<p><strong>Marc Vidalmorgó</strong><br>Fundador y Socio Único, VAV Holding<br>CEO Técnico, Vifer SL<br>Co-fundador, Trading Lab</p><p>📍 Lleida, Cataluña, España<br>💼 LinkedIn: Marc Vidalmorgó<br>🌐 vifer.tech</p>'},
+  proyectos:{t:'Los proyectos de VAV',b:'<p><strong>01 · Vifer SL</strong> — Automatización IA para pymes. Con Joel Fernández. Starter 150€ / Growth 200€ / Pro 350€ mes.<br><br><strong>02 · Trading Lab</strong> — Capital cripto con metodología. Con Sergi Alió. Tesis: Convergence Plays (DePIN × RWA × AI).<br><br><strong>03 · Newsletter Financiera</strong> — Análisis de mercados. Lanzamiento 2026. Gratis + Premium.</p>'}
+};
+
+function om(k) {
+  const m = d[k]; if(!m) return;
+  document.getElementById('mt').textContent = m.t;
+  document.getElementById('mb').innerHTML = m.b;
+  document.getElementById('modal').classList.add('open');
+}
+function cm() { document.getElementById('modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') cm(); });
+
+// ═══ SCROLL ANIMATIONS ═══
+const rv = document.querySelectorAll('.rv');
+const ob = new IntersectionObserver((es) => {
+  es.forEach((e, i) => {
+    if(e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('vi'), i * 80);
+      ob.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+rv.forEach(el => ob.observe(el));
+
+// ═══ NAV SCROLL ═══
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ═══ PARTICLES ═══
+const pc = document.getElementById('particles');
+for(let i = 0; i < 30; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random()*100 + '%';
+  p.style.animationDuration = (6 + Math.random()*8) + 's';
+  p.style.animationDelay = Math.random()*10 + 's';
+  p.style.width = p.style.height = (1 + Math.random()*2) + 'px';
+  pc.appendChild(p);
+}
+
+// ═══ SMOOTH NAV ═══
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if(t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+</script>
+</body>
+</html>
